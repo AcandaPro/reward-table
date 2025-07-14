@@ -1,4 +1,3 @@
-// 📁 reward-app-nest/src/task/task.service.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { TaskService } from './task.service';
@@ -54,21 +53,17 @@ describe('TaskService', () => {
 
   it('should create and return a task', async () => {
     const dto: CreateTaskDto = { title: 'Task 1', points: 5 };
-    const mockSave = jest.fn().mockResolvedValue(mockTask);
-
-    const mockTaskInstance = {
+    const createdTask = {
       ...mockTask,
       ...dto,
-      save: mockSave,
-    };
+      save: jest.fn().mockResolvedValue(mockTask),
+    } as Task;
+    const mockConstructor = jest.fn().mockImplementation(() => createdTask);
+    const customService = new TaskService(
+      mockConstructor as unknown as Model<Task>,
+    );
 
-    const mockTaskModel: any = jest
-      .fn()
-      .mockImplementation(() => mockTaskInstance);
-    mockTaskModel.prototype.save = mockSave;
-
-    const testService = new TaskService(mockTaskModel);
-    const result = await testService.create(dto);
+    const result = await customService.create(dto);
     expect(result).toEqual(mockTask);
   });
 
